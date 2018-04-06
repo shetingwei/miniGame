@@ -1,14 +1,9 @@
 package com.twshe.King;
 
-import java.util.concurrent.Executor;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.TimeoutException;
 
 public class App {
 	public static void main(String[] args) {
-
-		ExecutorService executor = Executors.newFixedThreadPool(2);
 
 		Thread thread1 = new Thread() {
 			public void run() {
