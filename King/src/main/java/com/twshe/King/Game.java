@@ -14,8 +14,9 @@ public class Game {
 
 	private static List<User> users = new ArrayList<User>();
 	private static Map<String, Timestamp> sessions = new HashMap<String, Timestamp>();
+	private final int TIME_LIMIT = 60;
 
-	public String login(String name) {
+	public String login(String name) throws IllegalStateException {
 	
 		synchronized (users) {
 			User user = new User(name);
@@ -23,7 +24,7 @@ public class Game {
 
 			if (index >= 0) {
 				if (sessions.containsKey(users.get(index).getSessionKey())) {
-					System.out.println("You have already login from the other device.");
+					throw new IllegalStateException("You have already login from the other device.");
 				} else {
 					sessions.put(users.get(index).getSessionKey(), new Timestamp(System.currentTimeMillis()));
 				}
@@ -53,8 +54,8 @@ public class Game {
 
 	private boolean checkTimeOut(String sessionKey) {
 		long diff = (new Timestamp(System.currentTimeMillis())).getTime() - sessions.get(sessionKey).getTime();
-		if (diff >= 10 * 60 * 1000) {
-			// if(diff >= 500) {
+		//if (diff >= 10 * TIME_LIMIT * 1000) {
+		if(diff >= 5000) {
 			return true;
 		} else {
 			return false;
