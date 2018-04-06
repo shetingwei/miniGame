@@ -77,7 +77,7 @@ public class Game {
 
 		String result = "";
 
-		List<User> list = users.stream().filter(u -> u.getRecord(level) != null).limit(15).collect(Collectors.toList());
+		List<User> list = users.stream().filter(u -> u.getRecord(level) != null).collect(Collectors.toList());
 
 		Comparator<User> comparator = new Comparator<User>() {
 			public int compare(User user1, User user2) {
@@ -86,10 +86,10 @@ public class Game {
 		};
 
 		Collections.sort(list, comparator);
-
-		for (int i = 0; i < list.size(); i++) {
+		
+		for (int i = 0; i < Math.min(list.size(), 15); i++) {
 			User user = list.get(i);
-			if (i != list.size() - 1) {
+			if (i != Math.min(list.size(), 15) - 1) {
 				result += user.getName() + " " + user.getRecord(level) + ",";
 			} else {
 				result += user.getName() + " " + user.getRecord(level);

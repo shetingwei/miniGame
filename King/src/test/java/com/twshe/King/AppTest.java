@@ -17,16 +17,16 @@ public class AppTest {
 	private Game game1;
 	private Game game2;
 	private static Set<String> sessionKeys = new HashSet<String>();
-	
+
 	@Before
 	public void setUp() {
 		game1 = new Game();
 		game2 = new Game();
 	}
-	
+
 	@Test
 	public void test1Login() {
-		
+
 		Thread thread1 = new Thread() {
 			public void run() {
 				for (int i = 1; i <= 10; i++) {
@@ -45,7 +45,7 @@ public class AppTest {
 
 		thread1.start();
 		thread2.start();
-		
+
 		try {
 			thread1.join();
 			thread2.join();
@@ -60,7 +60,7 @@ public class AppTest {
 		sessionKeys.add(game1.login("John"));
 		sessionKeys.add(game2.login("John"));
 	}
-	
+
 	@Test
 	public void test3PostUserScoreToLevel() {
 		try {
@@ -109,34 +109,76 @@ public class AppTest {
 			assertTrue(ex.toString(), false);
 		}
 	}
-	
-	@Test(expected = TimeoutException.class)
-	public void test5TimeoutCheck() throws TimeoutException {
+
+	@Test
+	public void test5GetHighScoreList() {
+
+		Thread thread1 = new Thread() {
+			public void run() {
+				try {
+					for (int i = 1; i <= 10; i++) {
+						game1.postUserScoreToLevel("Ting" + i, Level.EASY, 10000 + 1000 * i);
+					}
+				} catch (TimeoutException ex) {
+					System.out.println(ex.getMessage());
+				}
+			}
+		};
+
+		Thread thread2 = new Thread() {
+			public void run() {
+				try {
+					for (int i = 1; i <= 10; i++) {
+						game2.postUserScoreToLevel("Thomas" + i, Level.EASY, 20000 + 1000 * i);
+					}
+				} catch (TimeoutException ex) {
+					System.out.println(ex.getMessage());
+				}
+			}
+		};
+
+		thread1.start();
+		thread2.start();
+
 		try {
-			//Thread.sleep(10 * 60 * 1000);
+			thread1.join();
+			thread2.join();
+			assertEquals(
+					"Thomas10 30000,Thomas9 29000,Thomas8 28000,Thomas7 27000,Thomas6 26000,Thomas5 25000,Thomas4 24000,Thomas3 23000,Thomas2 22000,Thomas1 21000,Ting10 20000,Ting9 19000,Ting8 18000,Ting7 17000,Ting6 16000",
+					game1.getHighScoreList(Level.EASY));
+		} catch (InterruptedException ex) {
+			System.out.println(ex.getMessage());
+			assertTrue(ex.toString(), false);
+		}
+	}
+
+	@Test(expected = TimeoutException.class)
+	public void test6TimeoutCheck() throws TimeoutException {
+		try {
+			// Thread.sleep(10 * 60 * 1000);
 			Thread.sleep(5000);
 			game1.postUserScoreToLevel("Ting1", Level.EASY, 5000);
-		}catch(InterruptedException ex) {
+		} catch (InterruptedException ex) {
 			System.out.println(ex.getMessage());
-		}catch(TimeoutException ex) {
+		} catch (TimeoutException ex) {
 			throw ex;
 		}
 	}
-	
+
 	@Test
-	public void test6Logout() {
+	public void test7Logout() {
 		String session = game1.logout("Ting1");
-		if(sessionKeys.contains(session)) {
+		if (sessionKeys.contains(session)) {
 			sessionKeys.remove(session);
 			sessionKeys.add(game2.login("Ting1"));
 			assertTrue("Be able to do logout and login again.", true);
-		}else {
+		} else {
 			assertTrue("delete wrong session.", false);
 		}
 	}
-	
+
 	@Test
-	public void test7UpdateSession() {
+	public void test8UpdateSession() {
 		try {
 			game1.postUserScoreToLevel("Ting1", Level.EASY, 10000);
 			assertTrue("Be able to post score again after login.", true);
