@@ -1,3 +1,4 @@
+
 package com.twshe.King;
 
 public enum Level {

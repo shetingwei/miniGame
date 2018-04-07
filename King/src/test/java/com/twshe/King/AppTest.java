@@ -2,7 +2,11 @@ package com.twshe.King;
 
 import org.junit.Test;
 import static org.junit.Assert.*;
+import static org.mockito.Mockito.*;
 
+import java.time.Clock;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.TimeoutException;
@@ -16,21 +20,23 @@ public class AppTest {
 
 	private Game game1;
 	private Game game2;
+	private Clock mock;
 	private static Set<String> sessionKeys = new HashSet<String>();
 
 	@Before
 	public void setUp() {
 		game1 = new Game();
 		game2 = new Game();
+		mock = mock(Clock.class);
 	}
 
 	@Test
 	public void test1Login() {
-
+		
 		Thread thread1 = new Thread() {
 			public void run() {
 				for (int i = 1; i <= 10; i++) {
-					sessionKeys.add(game1.login("Ting" + i));
+					sessionKeys.add(game1.login("Ting" + i, Clock.systemUTC()));
 				}
 			}
 		};
@@ -38,7 +44,7 @@ public class AppTest {
 		Thread thread2 = new Thread() {
 			public void run() {
 				for (int i = 1; i <= 10; i++) {
-					sessionKeys.add(game2.login("Thomas" + i));
+					sessionKeys.add(game2.login("Thomas" + i, Clock.systemUTC()));
 				}
 			}
 		};
@@ -57,8 +63,8 @@ public class AppTest {
 
 	@Test(expected = IllegalStateException.class)
 	public void test2DuplicatLogin() {
-		sessionKeys.add(game1.login("John"));
-		sessionKeys.add(game2.login("John"));
+		sessionKeys.add(game1.login("John", Clock.systemUTC()));
+		sessionKeys.add(game2.login("John", Clock.systemUTC()));
 	}
 
 	@Test
@@ -154,12 +160,13 @@ public class AppTest {
 
 	@Test(expected = TimeoutException.class)
 	public void test6TimeoutCheck() throws TimeoutException {
+		
+		Instant instant = Instant.now().minus(70, ChronoUnit.MINUTES);
+		when(mock.instant()).thenReturn(instant);
+		
 		try {
-			// Thread.sleep(10 * 60 * 1000);
-			Thread.sleep(5000);
-			game1.postUserScoreToLevel("Ting1", Level.EASY, 5000);
-		} catch (InterruptedException ex) {
-			System.out.println(ex.getMessage());
+			game1.login("Test", mock);
+			game1.postUserScoreToLevel("Test", Level.EASY, 5000);
 		} catch (TimeoutException ex) {
 			throw ex;
 		}
@@ -170,7 +177,7 @@ public class AppTest {
 		String session = game1.logout("Ting1");
 		if (sessionKeys.contains(session)) {
 			sessionKeys.remove(session);
-			sessionKeys.add(game2.login("Ting1"));
+			sessionKeys.add(game2.login("Ting1", Clock.systemUTC()));
 			assertTrue("Be able to do logout and login again.", true);
 		} else {
 			assertTrue("delete wrong session.", false);

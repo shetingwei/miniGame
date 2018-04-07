@@ -1,44 +1,21 @@
 package com.twshe.King;
 
+import java.time.Clock;
 import java.util.concurrent.TimeoutException;
 
 public class App {
 	public static void main(String[] args) {
-
-		Thread thread1 = new Thread() {
-			public void run() {
-				Game game = new Game();
-				game.login("Ting");
-				try {
-					game.postUserScoreToLevel("Ting", Level.EASY, 1000);
-				} catch (TimeoutException ex) {
-					System.out.println(ex.getMessage());
-				}
-				System.out.println(game.getHighScoreList(Level.EASY));
-			}
-		};
-
-		Thread thread2 = new Thread() {
-			public void run() {
-				Game game = new Game();
-				game.login("Thomas");
-				try {
-					game.postUserScoreToLevel("Thomas", Level.EASY, 2000);
-				} catch (TimeoutException ex) {
-					System.out.println(ex.getMessage());
-				}
-				System.out.println(game.getHighScoreList(Level.EASY));
-			}
-		};
-
+		Game game = new Game();
+		game.login("Ting", Clock.systemUTC());
+		game.login("Thomas", Clock.systemUTC());
+		game.display();
 		try {
-			thread1.start();
-			thread2.start();
-			thread1.join();
-			thread2.join();
-		} catch (Exception e) {
-			System.out.println(e.toString());
+			game.postUserScoreToLevel("Ting", Level.EASY, 1000);
+			game.postUserScoreToLevel("Thomas", Level.EASY, 5000);
+			game.postUserScoreToLevel("Ting", Level.EASY, 2000);
+			System.out.println(game.getHighScoreList(Level.EASY));
+		}catch(TimeoutException ex) {
+			System.out.println(ex.getMessage());
 		}
-
 	}
 }
