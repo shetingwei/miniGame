@@ -70,11 +70,11 @@ public class LoginServiceImpl implements LoginService {
 		}
 	}
 
-	public void display() {
+	/*public void display() {
 		System.out.println("----------All----------");
 		for (User user : users) {
 			System.out.println(user.getName());
 		}
 		System.out.println("-----------------------");
-	}
+	}*/
 }

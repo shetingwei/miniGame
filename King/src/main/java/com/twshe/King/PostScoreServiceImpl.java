@@ -20,19 +20,18 @@ public class PostScoreServiceImpl implements PostScoreService {
 	}
 
 	public void postUserScoreToLevel(String name, Level level, int score) {
-		if (records.containsKey(level)) {
-			if (records.get(level).containsKey(name)) {
-				if (score > records.get(level).get(name)) {
-					records.get(level).put(name, score);
-				}
-			} else {
-				records.get(level).put(name, score);
+		
+		Map<String, Integer> map = new ConcurrentHashMap<String, Integer>();
+		map.put(name, score);
+		
+		Map<String, Integer> _map = records.putIfAbsent(level, map);
+		
+		if(_map != null) {
+			Integer _score = _map.putIfAbsent(name, score);
+			if(_score != null) {
+				_map.put(name, Math.max(score, _score));
 			}
-		} else {
-			Map<String, Integer> map = new ConcurrentHashMap<String, Integer>();
-			map.put(name, score);
-			records.put(level, map);
-		}
+		} 
 	}
 
 	public String getHighScoreList(Level level) {

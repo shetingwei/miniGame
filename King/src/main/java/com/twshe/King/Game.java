@@ -24,9 +24,9 @@ public class Game {
 		return loginService.checkTimeOut(name);
 	}
 	
-	public void display() {
+	/*public void display() {
 		loginService.display();
-	}
+	}*/
 
 	public void postUserScoreToLevel(String name, Level level, int score) throws TimeoutException {
 		if (!checkTimeOut(name)) {

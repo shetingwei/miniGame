@@ -5,16 +5,37 @@ import java.util.concurrent.TimeoutException;
 
 public class App {
 	public static void main(String[] args) {
-		Game game = new Game();
-		game.login("Ting", Clock.systemUTC());
-		game.login("Thomas", Clock.systemUTC());
-		game.display();
+		Game game1 = new Game();
+		Game game2 = new Game();
+		game1.login("Ting", Clock.systemUTC());
+		game2.login("Thomas", Clock.systemUTC());
 		try {
-			game.postUserScoreToLevel("Ting", Level.EASY, 1000);
-			game.postUserScoreToLevel("Thomas", Level.EASY, 5000);
-			game.postUserScoreToLevel("Ting", Level.EASY, 2000);
-			System.out.println(game.getHighScoreList(Level.EASY));
-		}catch(TimeoutException ex) {
+			Thread thread1 = new Thread() {
+				public void run() {
+					try {
+						game1.postUserScoreToLevel("Ting", Level.EASY, 10000);
+					} catch (TimeoutException ex) {
+						System.out.println(ex.getMessage());
+					}
+				}
+			};
+
+			Thread thread2 = new Thread() {
+				public void run() {
+					try {
+							game2.postUserScoreToLevel("Thomas", Level.EASY, 20000);
+					} catch (TimeoutException ex) {
+						System.out.println(ex.getMessage());
+					}
+				}
+			};
+			thread1.start();
+			thread2.start();
+			thread1.join();
+			thread2.join();
+			
+			System.out.println(game1.getHighScoreList(Level.EASY));
+		}catch (InterruptedException ex) {
 			System.out.println(ex.getMessage());
 		}
 	}
