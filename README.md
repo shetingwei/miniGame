@@ -6,6 +6,7 @@ Enhancement after code review:<br/>
 3. Remove scores from User based on security concern. PostScoreService has a map to record every user's score.<br/>
 4. PostScoreService uses ConcurrentHashMap to consider concurrency.<br/>
 5. LoginService's login function takes Clock as an input. It helps us do timeout testing with mocking technique.<br/>
+6. Implement unit test in AppTest. <br/>
 
 What I learned from code review:<br/>
 1. HashMap uses TreeSet to implement Hash chain, making complexity from O(n) to O(log n). Before Java 8, it used LinkedList.<br/>
