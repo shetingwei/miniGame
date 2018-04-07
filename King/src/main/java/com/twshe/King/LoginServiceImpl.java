@@ -4,14 +4,14 @@ import java.time.Clock;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class LoginServiceImpl implements LoginService {
 	
 	private List<User> users = new ArrayList<User>();
-	private Map<String, Instant> sessions = new HashMap<String, Instant>();
+	private Map<String, Instant> sessions = new ConcurrentHashMap<String, Instant>();
 	private final int TIME_LIMIT = 60;
 
 	private static LoginServiceImpl loginServiceImpl = new LoginServiceImpl();
