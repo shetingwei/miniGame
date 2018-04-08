@@ -14,5 +14,7 @@ What I learned from code review:<br/>
 3. Why can Lambda expression be used when interface has more than one method? Because interface is able to have default methods.<br/>
 4. SynchronizedHashMap's each method is synchronized and lock is object level. While a thread using get or put method, it will lock the      whole collection, no other threads can use it. SynchronizedHashMap has performance overhead.<br/>
 5. ConcurrentHashMap's lock is at bucket level, allowing threads do get and put simultaneously. ConcurrentHashMap has better performance.<br/>
+6. Java 8 Streams lazy evaluation. each intermedia operation doesn't do operation immediately, it returns new stream and become pipelined. When the terminal operation is invoked, traversal of streams begins and associated operations are performed one by one.
+7. I can use partitions to subdivide table into small pieces. It will enhance the speed of data access. I used to create index to fix the slow query problem.
 
 
