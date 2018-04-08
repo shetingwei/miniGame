@@ -4,6 +4,8 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -31,12 +33,12 @@ public class AppTest {
 	}
 
 	@Test
-	public void test1Login() {
-		
+	public void test1Login() throws InterruptedException {
+
 		Thread thread1 = new Thread() {
 			public void run() {
 				for (int i = 1; i <= 10; i++) {
-					sessionKeys.add(game1.login("Ting" + i, Clock.systemUTC()));
+					sessionKeys.add(game1.login("Ting" + i));
 				}
 			}
 		};
@@ -44,7 +46,7 @@ public class AppTest {
 		Thread thread2 = new Thread() {
 			public void run() {
 				for (int i = 1; i <= 10; i++) {
-					sessionKeys.add(game2.login("Thomas" + i, Clock.systemUTC()));
+					sessionKeys.add(game2.login("Thomas" + i));
 				}
 			}
 		};
@@ -52,72 +54,29 @@ public class AppTest {
 		thread1.start();
 		thread2.start();
 
-		try {
-			thread1.join();
-			thread2.join();
-			assertTrue(sessionKeys.size() == 20);
-		} catch (InterruptedException ex) {
-			System.out.println(ex.getMessage());
-		}
+		thread1.join();
+		thread2.join();
+		assertTrue(sessionKeys.size() == 20);
 	}
 
 	@Test(expected = IllegalStateException.class)
 	public void test2DuplicatLogin() {
-		sessionKeys.add(game1.login("John", Clock.systemUTC()));
-		sessionKeys.add(game2.login("John", Clock.systemUTC()));
+		sessionKeys.add(game1.login("John"));
+		sessionKeys.add(game2.login("John"));
 	}
 
 	@Test
-	public void test3PostUserScoreToLevel() {
-		try {
-			for (int i = 1; i <= 10; i++) {
-				game1.postUserScoreToLevel("Ting1", Level.EASY, 1000 + i * 10);
-			}
-			assertTrue("Be able to post many times.", true);
-		} catch (TimeoutException ex) {
-			System.out.println(ex.getMessage());
-			assertTrue(ex.toString(), false);
+	public void test3PostUserScoreToLevel() throws TimeoutException {
+
+		for (int i = 1; i <= 10; i++) {
+			game1.postUserScoreToLevel("Ting1", Level.EASY, 1000 + i * 10);
 		}
+
+		assertTrue("Be able to post many times.", true);
 	}
 
 	@Test
-	public void test4GetHighScoreList() {
-
-		Thread thread1 = new Thread() {
-			public void run() {
-				try {
-					game1.postUserScoreToLevel("Ting1", Level.EASY, 3000);
-				} catch (TimeoutException ex) {
-					System.out.println(ex.getMessage());
-				}
-			}
-		};
-
-		Thread thread2 = new Thread() {
-			public void run() {
-				try {
-					game2.postUserScoreToLevel("Thomas1", Level.EASY, 5000);
-				} catch (TimeoutException ex) {
-					System.out.println(ex.getMessage());
-				}
-			}
-		};
-
-		thread1.start();
-		thread2.start();
-
-		try {
-			thread1.join();
-			thread2.join();
-			assertEquals("Thomas1 5000,Ting1 3000", game1.getHighScoreList(Level.EASY));
-		} catch (InterruptedException ex) {
-			System.out.println(ex.getMessage());
-			assertTrue(ex.toString(), false);
-		}
-	}
-
-	@Test
-	public void test5GetHighScoreList() {
+	public void test4GetHighScoreList() throws InterruptedException {
 
 		Thread thread1 = new Thread() {
 			public void run() {
@@ -146,52 +105,25 @@ public class AppTest {
 		thread1.start();
 		thread2.start();
 
-		try {
-			thread1.join();
-			thread2.join();
-			assertEquals(
-					"Thomas10 30000,Thomas9 29000,Thomas8 28000,Thomas7 27000,Thomas6 26000,Thomas5 25000,Thomas4 24000,Thomas3 23000,Thomas2 22000,Thomas1 21000,Ting10 20000,Ting9 19000,Ting8 18000,Ting7 17000,Ting6 16000",
-					game1.getHighScoreList(Level.EASY));
-		} catch (InterruptedException ex) {
-			System.out.println(ex.getMessage());
-			assertTrue(ex.toString(), false);
-		}
+		thread1.join();
+		thread2.join();
+		assertEquals(
+				"Thomas10 30000,Thomas9 29000,Thomas8 28000,Thomas7 27000,Thomas6 26000,Thomas5 25000,Thomas4 24000,Thomas3 23000,Thomas2 22000,Thomas1 21000,Ting10 20000,Ting9 19000,Ting8 18000,Ting7 17000,Ting6 16000",
+				game1.getHighScoreList(Level.EASY));
 	}
 
 	@Test(expected = TimeoutException.class)
-	public void test6TimeoutCheck() throws TimeoutException {
-		
+	public void test5TimeoutCheck() throws TimeoutException, NoSuchMethodException, IllegalArgumentException,
+			InvocationTargetException, IllegalAccessException {
+
 		Instant instant = Instant.now().minus(70, ChronoUnit.MINUTES);
 		when(mock.instant()).thenReturn(instant);
-		
-		try {
-			game1.login("Test", mock);
-			game1.postUserScoreToLevel("Test", Level.EASY, 5000);
-		} catch (TimeoutException ex) {
-			throw ex;
-		}
-	}
 
-	@Test
-	public void test7Logout() {
-		String session = game1.logout("Ting1");
-		if (sessionKeys.contains(session)) {
-			sessionKeys.remove(session);
-			sessionKeys.add(game2.login("Ting1", Clock.systemUTC()));
-			assertTrue("Be able to do logout and login again.", true);
-		} else {
-			assertTrue("delete wrong session.", false);
-		}
-	}
+		Method method = game1.getClass().getDeclaredMethod("login", new Class[] { String.class, Clock.class });
+		method.setAccessible(true);
+		method.invoke(game1, "Test", mock);
 
-	@Test
-	public void test8UpdateSession() {
-		try {
-			game1.postUserScoreToLevel("Ting1", Level.EASY, 10000);
-			assertTrue("Be able to post score again after login.", true);
-		} catch (TimeoutException ex) {
-			assertTrue("Not able to post score again after login.", false);
-		}
+		game1.postUserScoreToLevel("Test", Level.EASY, 5000);
 	}
 
 }
