@@ -12,12 +12,11 @@ public class LoginServiceImpl implements LoginService {
 	private Map<String, String> users = new ConcurrentHashMap<String, String>();
 	private Map<String, Instant> sessions = new ConcurrentHashMap<String, Instant>();
 	private final int TIME_LIMIT = 60;
-	private Clock clock;
+	private final Clock clock = Clock.systemUTC();
 	
 	private static LoginServiceImpl loginServiceImpl = new LoginServiceImpl();
 
 	private LoginServiceImpl() {
-		clock = Clock.systemUTC();
 	}
 	
 	public static LoginServiceImpl getInstance() {
@@ -25,14 +24,7 @@ public class LoginServiceImpl implements LoginService {
 	}
 
 	public String login(String name) throws IllegalStateException {
-		String sessionKey = UUID.randomUUID().toString();
-		String _sessionKey = users.putIfAbsent(name, sessionKey);
-		if (_sessionKey != null) {
-			throw new IllegalStateException("You have already login from the other device.");
-		} else {
-			sessions.putIfAbsent(sessionKey, clock.instant());
-			return sessionKey;
-		}
+		return login(name, clock);
 	}
 	
 	private String login(String name, Clock clock) throws IllegalStateException {
